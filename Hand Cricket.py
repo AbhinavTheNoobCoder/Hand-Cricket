@@ -1,7 +1,7 @@
 import random
 print('''Welcome to Hand Cricket.
 Please read the rules here:
-
+http://tinyurl.com/handcricketrules
 A gentle reminder that 5 is an illegal number. 4 and 6 are consecutive numbers.
 ''')
 
