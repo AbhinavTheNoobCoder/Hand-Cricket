@@ -398,6 +398,7 @@ def handCricket():
       print(f"Target: {target}\n")
 
       if team2_score >= target:
+        team1_individual_overs[bowler] += float(f"0.{balls_bowled_in_over}") if balls_bowled_in_over != 6 else 1
         gameOver = True
         result = f"{team2.name} beat {team1.name} by {10 - team2_wickets} wickets."
         print(f"{team2.name} beat {team1.name} by {10 - team2_wickets} wickets.")
