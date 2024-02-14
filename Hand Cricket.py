@@ -10,13 +10,18 @@ class GameForfeitError(Exception):
 
 class CricketTeam():
   def __init__(self, name, roster):
-    self.name = name
+    self.name = name.strip(" ")
     self.roster = list(roster)
+    self.captain = self.wicketkeeper = None
   
   def initialiseTeam(self):
     for _ in range(11):
-      member = input(f"Enter a player name for {self.name}: ")
+      member = input(f"Enter a player name for {self.name}: ").strip(" ")
       self.roster.append(member)
+    
+    cap = input(f"Enter captain name for {self.name}: ").strip(" ")
+    keeper = input(f"Enter wicketkeeper name for {self.name}: ").strip(" ")
+    self.captain, self.wicketkeeper = cap, keeper
 
 player_team = CricketTeam(input("Enter YOUR team's name: "), [])
 player_team.initialiseTeam()
@@ -54,7 +59,7 @@ def toss():
   user_toss = input('''It is toss time.
 Your call.
 H for Heads and T for Tails.
->>> ''').upper()
+>>> ''').upper().strip(" ")
 
   coin_landed_on = random.choice(toss_options)
   print(f"The coin landed on {toss_dict[coin_landed_on]}.")
@@ -65,39 +70,46 @@ H for Heads and T for Tails.
     elect_options.remove(elect_choice)
     elect_dict[elect_options[0]] = player_team
     print(f"{computer_team.name} won the toss and elected to {elect_choice} first.\n")
-
+    toss_statement = f"{computer_team.name} won the toss and elected to {elect_choice} first."
   else:
-    elect_choice = input(f"Choose what to do first from {elect_options}: ").lower()
+    elect_choice = input(f"Choose what to do first from {elect_options}: ").lower().strip(" ")
     elect_dict[elect_choice] = player_team
     elect_options.remove(elect_choice)
     elect_dict[elect_options[0]] = computer_team
     print(f"{player_team.name} won the toss and elected to {elect_choice} first.\n")
-  
-  return elect_dict
+    toss_statement = f"{player_team.name} won the toss and elected to {elect_choice} first."
 
-result_of_toss = toss()
+  return elect_dict, toss_statement
+
+result_of_toss, toss_statement = toss()
+
 def handCricket():
   team1 = result_of_toss["bat"]
   team2 = result_of_toss["bowl"]
   team1_score = team2_score = 0
   team1_available_batsmen = team1.roster.copy()
   team2_available_batsmen = team2.roster.copy()
+
   team1_available_bowlers = team1.roster.copy()
+  team1_available_bowlers.remove(team1.wicketkeeper)
+  
   team2_available_bowlers = team2.roster.copy()
-  team1_nextover = team1.roster.copy()
-  team2_nextover = team2.roster.copy()
+  team2_available_bowlers.remove(team2.wicketkeeper)
+
+  team1_nextover = team1_available_bowlers.copy()
+  team2_nextover = team2_available_bowlers.copy()
 
   team1_wickets = team2_wickets = 0
-  team1_individual_runs = {}.fromkeys(team1.roster, 0)
-  team1_individual_balls = {}.fromkeys(team1.roster, 0)
-  team2_individual_runs = {}.fromkeys(team2.roster, 0)
-  team2_individual_balls = {}.fromkeys(team2.roster, 0)
-  team1_individual_wickets = {}.fromkeys(team1.roster, 0)
-  team1_individual_overs = {}.fromkeys(team1.roster, 0)
-  team2_individual_wickets = {}.fromkeys(team2.roster, 0)
-  team2_individual_overs = {}.fromkeys(team2.roster, 0)
-  team1_bowler_runs = {}.fromkeys(team1.roster, 0)
-  team2_bowler_runs = {}.fromkeys(team2.roster, 0)
+  team1_individual_runs = {}
+  team1_individual_balls = {}
+  team2_individual_runs = {}
+  team2_individual_balls = {}
+  team1_individual_wickets = {}.fromkeys(team1_available_bowlers, 0)
+  team1_individual_overs = {}.fromkeys(team1_available_bowlers, 0)
+  team2_individual_wickets = {}.fromkeys(team2_available_bowlers, 0)
+  team2_individual_overs = {}.fromkeys(team2_available_bowlers, 0)
+  team1_bowler_runs = {}.fromkeys(team1_available_bowlers, 0)
+  team2_bowler_runs = {}.fromkeys(team2_available_bowlers, 0)
 
   team1_currentbat = []
   team2_currentbat = []
@@ -106,7 +118,7 @@ def handCricket():
 
     if team2 == player_team: #player's team is bowling first
       print(f"{team2.name} can choose a bowler from {team2_nextover}: ")
-      bowler = input("Enter a bowler name: ")
+      bowler = input("Enter a bowler name: ").strip(" ")
       team2_nextover.remove(bowler)
 
     else: #computer's team is bowling first
@@ -127,19 +139,27 @@ def handCricket():
           print(f"{team1.name}'s current available players are: {team1_available_batsmen}") #show available batsmen
           
           for _ in range(2 - len(team1_currentbat)): #vacancies on pitch
-            batsman = input("Send a batsman: ")
-            
+            batsman = input("Send a batsman: ").strip(" ")
+            team1_individual_runs[batsman] = 0
+            team1_individual_balls[batsman] = 0
+            print(f"{batsman} comes out to bat.\n") if team1_wickets != 0 else ""
             team1_currentbat.insert(0, batsman) if team1_wickets != 0 else team1_currentbat.append(batsman) 
             team1_available_batsmen.remove(batsman) #sent batsmen cannot bat again
 
         else: #Computer's team is batting first
           if team1_wickets == 0: #finding openers
-            team1_currentbat = team1_available_batsmen[:2] #First two available batsmen are picked up 
+            team1_currentbat = team1_available_batsmen[:2] #First two available batsmen are picked up
+            team1_individual_runs = {}.fromkeys(team1_currentbat, 0)
+            team1_individual_balls = {}.fromkeys(team1_currentbat, 0)
+            print(f"The openers are: {team1_currentbat}\n") 
             team1_available_batsmen = team1_available_batsmen[2: ] #from in at 3 till in at 11
           
           else: #at least 1 wicket is gone
             team1_currentbat.insert(0, team1_available_batsmen[0]) if team1_available_batsmen != [] else "" #first available batsman picked
-            team1_available_batsmen.pop(0) #no more available
+            batsman = team1_available_batsmen.pop(0) #no more available
+            print(f"{batsman} comes out to bat.\n")
+            team1_individual_runs[batsman] = 0
+            team1_individual_balls[batsman] = 0
       
 
       batsman = team1_currentbat[0] #first person in current batsmen list is on strike
@@ -254,6 +274,7 @@ def handCricket():
 
   target = team1_score + 1
   print(f"{team1.name} scored {team1_score} in {team1_balls//6}.{team1_balls%6} overs.")
+  team1_overs = f"{team1_balls//6}.{team1_balls%6}"
   print(f"{team2.name} need {target} runs in 10 overs to win. Required run rate: {target/10}")
 
   while team2_wickets < 10 and team2_balls != 60:
@@ -280,20 +301,27 @@ def handCricket():
           print(f"{team2.name}'s current available players are: {team2_available_batsmen}") #show available batsmen
           
           for _ in range(2 - len(team2_currentbat)): #vacancies on pitch
-            batsman = input("Send a batsman: ")
-            
+            batsman = input("Send a batsman: ").strip(" ")
+            team2_individual_runs[batsman] = 0
+            team2_individual_balls[batsman] = 0
+            print(f"{batsman} comes out to bat.\n") if team2_wickets != 0 else ""
             team2_currentbat.insert(0, batsman) if team2_wickets != 0 else team2_currentbat.append(batsman)
             team2_available_batsmen.remove(batsman) #sent batsmen cannot bat again
 
         else:
           if team2_wickets == 0: #finding openers
             team2_currentbat = team2_available_batsmen[:2] #First two available batsmen are picked up 
+            team2_individual_runs = {}.fromkeys(team2_currentbat, 0)
+            team2_individual_balls = {}.fromkeys(team2_currentbat, 0)
+            print(f"The openers are: {team2_currentbat}\n")
             team2_available_batsmen = team2_available_batsmen[2: ] #from in at 3 till in at 11
           
           else: #at least 1 wicket is gone
             team2_currentbat.insert(0, team2_available_batsmen[0]) if team2_available_batsmen!=[] else "" #first available batsman picked
-            team2_available_batsmen.pop(0) #no more available
-      
+            batsman = team2_available_batsmen.pop(0) #no more available
+            print(f"{batsman} comes out to bat.\n")
+            team2_individual_runs[batsman] = 0
+            team2_individual_balls[batsman] = 0
 
       batsman = team2_currentbat[0] #first person in current batsmen list is on strike
       print(f"{bowler} bowling to {batsman}.\n")
@@ -398,6 +426,7 @@ def handCricket():
       print(f"Target: {target}\n")
 
       if team2_score >= target:
+        team2_overs = f"{team2_balls//6}.{balls_bowled_in_over}"
         team1_individual_overs[bowler] += float(f"0.{balls_bowled_in_over}") if balls_bowled_in_over != 6 else 1
         gameOver = True
         result = f"{team2.name} beat {team1.name} by {10 - team2_wickets} wickets."
@@ -406,6 +435,7 @@ def handCricket():
 
       if team2_wickets == 10: #all out within the over
         team1_individual_overs[bowler] += float(f"0.{balls_bowled_in_over}") if balls_bowled_in_over != 6 else 1
+        team2_overs = f"{team2_balls//6}.{balls_bowled_in_over}"
         if team2_score == team1_score:
           gameOver = True
           result = "Game drawn."
@@ -433,15 +463,22 @@ def handCricket():
       result = f"{team1.name} beat {team2.name} by {team1_score - team2_score} runs."
       print(result)
   
-  view_match_report = input("View match report (entire scorecard)? Enter Y for yes and N for no: ").upper()
+  view_match_report = input("View match report (entire scorecard)? Enter Y for yes and N for no: ").upper().strip(" ")
   if view_match_report == "Y":
     print("Match report:\n")
+    print(f"Toss: {toss_statement}")
     print(f"Result: {result}")
-    print(f"{team1.name} - {team1_score}/{team1_wickets}:")
+    print(f"{team1.name} - {team1_score}/{team1_wickets} ({team1_overs} overs):")
     for batter in team1_individual_runs:
       runs = team1_individual_runs[batter]
       balls = team1_individual_balls[batter]
-      spaces = " " * (45 - (len(batter) + (len(str(runs)) + len(str(balls))) - 2))
+      if batter == team1.captain:
+        batter += " (c)"
+      if batter == team1.wicketkeeper:
+        batter += " (wk)"
+      if batter in team1_currentbat:
+        batter += "*"
+      spaces = " " * (35 - (len(batter) + (len(str(runs)) + len(str(balls))) - 2))
       if batter not in team1_available_batsmen:
         print(f"{batter}{spaces}{runs}({balls})")
       else:
@@ -454,16 +491,24 @@ def handCricket():
       runs = team2_bowler_runs[bowler]
       overs = team2_individual_overs[bowler]
       performance = f"{wickets}-{runs} ({overs} overs)"
-      spaces = " " * (50 - len(bowler) - len(performance))
+      if bowler == team2.captain:
+        bowler += " (c)"
+      spaces = " " * (40 - len(bowler) - len(performance))
       if overs != 0:
         print(f"{bowler}{spaces}{performance}")
     print("\n")
     
-    print(f"{team2.name} - {team2_score}/{team2_wickets}:")
+    print(f"{team2.name} - {team2_score}/{team2_wickets} ({team2_overs} overs):")
     for batter in team2_individual_runs:
       runs = team2_individual_runs[batter]
       balls = team2_individual_balls[batter]
-      spaces = " " * (45 - (len(batter) + (len(str(runs)) + len(str(balls))) - 2))
+      if batter == team2.captain:
+        batter += " (c)"
+      if batter == team2.wicketkeeper:
+        batter += " (wk)"
+      if batter in team2_currentbat:
+        batter += "*"
+      spaces = " " * (35 - (len(batter) + (len(str(runs)) + len(str(balls))) - 2))
       if batter not in team2_available_batsmen:
         print(f"{batter}{spaces}{runs}({balls})")
       else:
@@ -476,7 +521,9 @@ def handCricket():
       runs = team1_bowler_runs[bowler]
       overs = team1_individual_overs[bowler]
       performance = f"{wickets}-{runs} ({overs} overs)"
-      spaces = " " * (50 - len(bowler) - len(performance))
+      if bowler == team1.captain:
+        bowler += " (c)"
+      spaces = " " * (40 - len(bowler) - len(performance))
       if overs != 0:
         print(f"{bowler}{spaces}{performance}")
     print("\n")
