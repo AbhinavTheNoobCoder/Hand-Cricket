@@ -460,6 +460,7 @@ def handCricket():
   
   else:
     if team2_score < team1_score:
+      team2_overs = 10
       result = f"{team1.name} beat {team2.name} by {team1_score - team2_score} runs."
       print(result)
   
