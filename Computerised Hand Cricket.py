@@ -296,17 +296,18 @@ def handCricket():
   print(f"Result: {result}")
   print(f"{team1.name} - {team1_score}/{team1_wickets} ({team1_overs} overs):")
   for batter in team1_individual_runs:
+    display_name = batter
     runs = team1_individual_runs[batter]
     balls = team1_individual_balls[batter]
     if batter == team1.captain:
-      batter += " (c)"
+      display_name += " (c)"
     if batter == team1.wicketkeeper:
-      batter += " (wk)"
+      display_name += " (wk)"
     if batter in team1_currentbat:
-      batter += "*"
-    spaces = " " * (35 - (len(batter) + (len(str(runs)) + len(str(balls))) - 2))
+      display_name += "*"
+    spaces = " " * (35 - (len(display_name) + (len(str(runs)) + len(str(balls))) - 2))
     if batter not in team1_available_batsmen:
-      print(f"{batter}{spaces}{runs}({balls})")
+      print(f"{display_name}{spaces}{runs}({balls})")
     else:
       print(f"{batter} - DNB")
   print("\n")
@@ -326,17 +327,18 @@ def handCricket():
   
   print(f"{team2.name} - {team2_score}/{team2_wickets} ({team2_overs} overs):")
   for batter in team2_individual_runs:
+    display_name = batter
     runs = team2_individual_runs[batter]
     balls = team2_individual_balls[batter]
     if batter == team2.captain:
-      batter += " (c)"
+      display_name += " (c)"
     if batter == team2.wicketkeeper:
-      batter += " (wk)"
+      display_name += " (wk)"
     if batter in team2_currentbat:
-      batter += "*"
-    spaces = " " * (35 - (len(batter) + (len(str(runs)) + len(str(balls))) - 2))
+      display_name += "*"
+    spaces = " " * (35 - (len(display_name) + (len(str(runs)) + len(str(balls))) - 2))
     if batter not in team2_available_batsmen:
-      print(f"{batter}{spaces}{runs}({balls})")
+      print(f"{display_name}{spaces}{runs}({balls})")
     else:
       print(f"{batter} - DNB")
   print("\n")
