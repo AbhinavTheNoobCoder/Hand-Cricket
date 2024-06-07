@@ -80,22 +80,48 @@ common_dismissal_types = ('c X b Y', 'b', 'lbw')
 
 #defining bowling order - to ensure no bowler bowls more than 2 overs, no consec. overs
 def createBowlingOrder(bowler_list: list):
-  bowling_order = []
-  possible_bowlers = bowler_list.copy()
-  overs_dict = {i:0 for i in bowler_list}
-  next_over = possible_bowlers.copy()
+  if len(bowler_list) == 5:
+    bowling_order = []
+    num_bowlers = len(bowler_list)
 
-  for _ in range(10):
-    bowler = random.choice(next_over)
-    bowling_order.append(bowler)
-    overs_dict[bowler] += 1
+    # Calculate total overs
+    total_overs = 4 * num_bowlers
 
-    if overs_dict[bowler] == 2:
-      possible_bowlers.remove(bowler)
+    # Initialize two lists to alternate bowlers
+    current_bowlers = bowler_list.copy()
+    next_bowlers = []
 
+    for _ in range(total_overs):
+      # Select bowler from current list
+      bowler = current_bowlers.pop(0)
+      bowling_order.append(bowler)
+
+      # Add bowler to next bowlers list (won't bowl consecutively)
+      next_bowlers.append(bowler)
+
+      # If enough overs bowled, switch bowler lists
+      if len(current_bowlers) == 0:
+        current_bowlers = next_bowlers.copy()
+        next_bowlers = []
+
+
+  if len(bowler_list) > 5:
+    bowling_order = []
+    possible_bowlers = bowler_list.copy()
+    overs_dict = {i:0 for i in bowler_list}
     next_over = possible_bowlers.copy()
-    if bowler in next_over:
-      next_over.remove(bowler)
+
+    for _ in range(20):
+      bowler = random.choice(next_over)
+      bowling_order.append(bowler)
+      overs_dict[bowler] += 1
+
+      if overs_dict[bowler] == 4:
+        possible_bowlers.remove(bowler)
+
+      next_over = possible_bowlers.copy()
+      if bowler in next_over:
+        next_over.remove(bowler)
 
   return bowling_order
 
@@ -204,8 +230,14 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
           return team_score + 1, scorecard   #target
         
         elif chasing: #couldn't chase the target and got all out
-          scorecard = createScorecard()     
-          result = f"{bowling_side.name} beat {batting_side.name} by {target - 1 - team_score} runs."
+          if team_score < target - 1:
+            scorecard = createScorecard()     
+            result = f"{bowling_side.name} beat {batting_side.name} by {target - 1 - team_score} runs."
+          
+          elif team_score == target - 1:
+            scorecard = createScorecard()
+            result = "Match drawn."
+
           return result, scorecard
 
         break
@@ -225,8 +257,14 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
       return team_score + 1, scorecard
     
     elif chasing: #couldn't chase and didn't get all out
-      result = f"{bowling_side.name} beat {batting_side.name} by {target - 1 - team_score} runs."
-      scorecard = createScorecard()
+      if team_score < target - 1:
+        result = f"{bowling_side.name} beat {batting_side.name} by {target - 1 - team_score} runs."
+        scorecard = createScorecard()
+      
+      elif team_score == target - 1:
+        result = "Match drawn."
+        scorecard = createScorecard()
+        
       return result, scorecard
 
 defending_team = toss_dict['bat']
