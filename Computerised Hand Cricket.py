@@ -1,5 +1,5 @@
 import random
-from math import floor
+from math import floor, ceil
 print('''Welcome to Hand Cricket.
 You have to write the playing XI for both the teams and the computer will play the game.
 When you are writing the name of an all-rounder or bowler, write "(b)" AFTER their name.
@@ -150,14 +150,14 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
 
   bowling_order = createBowlingOrder(bowling_side.bowlers)
 
-  while batting_side.balls_played < 60:
+  while batting_side.balls_played < 120:
     #playing an over
     for _ in range(6):
       batter_on_strike = bat_partners[0]
       bowler = bowling_order[0]
 
-      bat_number = random.choice(numbers)
-      bowl_number = random.choice(numbers)
+      bat_number = numbers[floor(random.triangular(0, 1, 5))]
+      bowl_number = numbers[ceil(random.triangular(0, 4, 5))]
       batter_on_strike.bat_balls += 1 #incrementing the ball already
       bowler.bowl_balls += 1
       batting_side.balls_played += 1
