@@ -23,6 +23,7 @@ class CricketTeam():
     self.playing_xi = []
     self.bowlers = []
     self.wickets_lost = self.score = self.balls_played = 0
+    self.captain = self.wk = None
   
   def initialiseTeam(self):
     for _ in range(11):
