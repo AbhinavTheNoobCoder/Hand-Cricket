@@ -15,13 +15,18 @@ class Player():
     self.wickets = 0
     self.did_bat = False
     self.dismissal = "not out"
+  
+  def resetStats(self): #this is to reset any individual stats from the previous game
+    self.bat_runs = self.bat_balls = self.bowl_runs = self.bowl_balls = self.wickets = 0
+    self.did_bat = False
+    self.dismissal = "not out"
 
 #creating CricketTeam to store all info related to the team
 class CricketTeam():
   def __init__(self, name):
-    self.name = name
-    self.playing_xi = []
-    self.bowlers = []
+    self.name: str = name
+    self.playing_xi: list[Player] = []
+    self.bowlers: list[Player] = []
     self.wickets_lost = self.score = self.balls_played = 0
     self.captain = self.wk = None
   
@@ -29,7 +34,7 @@ class CricketTeam():
     for _ in range(11):
       player = Player(input(f"Enter a player's name for {self.name}: ").strip(" "))
 
-      if "(c)" in player.name or "(c)" in player.name:
+      if "(c)" in player.name or "(C)" in player.name:
         player.name = player.name.replace("(c)", "")
         player.name = player.name.replace("(C)", "")
         self.captain = player
@@ -46,32 +51,11 @@ class CricketTeam():
       
       self.playing_xi.append(player)
 
-#accepting two teams
-home_team = CricketTeam(input("Enter the home team: ").strip(" "))
-home_team.initialiseTeam()
-print()
-away_team = CricketTeam(input("Enter the away team: ").strip(" "))
-away_team.initialiseTeam()
+  def resetAll(self): #this is to reset any stats related to previous game
+    self.balls_played = self.score = self.wickets_lost = 0
+    for player in self.playing_xi:
+      player.resetStats()
 
-#toss
-toss_options = ('H', 'T')
-toss_call = random.choice(toss_options)
-coin_land = random.choice(toss_options)
-elect_options = ["bat", "bowl"]
-elect = random.choice(elect_options)
-
-if toss_call == coin_land:
-  toss_winner = away_team
-  toss_loser = home_team
-  
-else:
-  toss_winner = home_team
-  toss_loser = away_team
-
-toss_statement = f"Toss: {toss_winner.name} won the toss and elected to {elect} first."
-toss_dict = {elect: toss_winner}
-elect_options.remove(elect)
-toss_dict.update({elect_options[0]: toss_loser})
 
 numbers = (0, 1, 2, 3, 4, 6)
 #defining scoring_counting
@@ -95,7 +79,7 @@ def scoreCounting(bat_number: int, bowl_number: int):
 common_dismissal_types = ('c X b Y', 'b', 'lbw')
 
 #defining bowling order - to ensure no bowler bowls more than 2 overs, no consec. overs
-def createBowlingOrder(bowler_list: list):
+def createBowlingOrder(bowler_list: list[Player]) -> list[Player]:
   if len(bowler_list) == 5:
     bowling_order = []
     num_bowlers = len(bowler_list)
@@ -142,7 +126,7 @@ def createBowlingOrder(bowler_list: list):
   return bowling_order
 
 #defining batting
-def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool, target: int | None = None):
+def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool, target: int | None = None) -> str | int:
   bat_partners = [batting_side.playing_xi[0], batting_side.playing_xi[1]]
   for _ in bat_partners:
     _.did_bat = True
@@ -235,10 +219,6 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
 
       return result
 
-defending_team = toss_dict['bat']
-chasing_team = toss_dict['bowl']
-target = batting(defending_team, chasing_team, False)
-result = batting(chasing_team, defending_team, True, target)
 
 def createScorecard(batting_side: CricketTeam, bowling_side: CricketTeam):
   scorecard = f"{batting_side.name} - {batting_side.score}/{batting_side.wickets_lost} ({batting_side.balls_played//6}.{batting_side.balls_played%6} overs):"
@@ -270,8 +250,52 @@ def createScorecard(batting_side: CricketTeam, bowling_side: CricketTeam):
 
   print(scorecard, '\n\n')
 
-print('\n\n')
-print(toss_statement)
-print("Result:", result, '\n')
-createScorecard(defending_team, chasing_team)
-createScorecard(chasing_team, defending_team)
+
+if __name__ == "__main__": #run code only when it's the main program
+  #accepting two teams
+  home_team = CricketTeam(input("Enter the home team: ").strip(" "))
+  home_team.initialiseTeam()
+  print()
+  away_team = CricketTeam(input("Enter the away team: ").strip(" "))
+  away_team.initialiseTeam()
+
+  def main(): #main part of the program - toss and gameplay - can be reused infinitely
+    #toss
+    toss_options = ('H', 'T')
+    toss_call = random.choice(toss_options)
+    coin_land = random.choice(toss_options)
+    elect_options = ["bat", "bowl"]
+    elect = random.choice(elect_options)
+
+    if toss_call == coin_land: #away team calls the toss - wins it
+      toss_winner = away_team
+      toss_loser = home_team
+      
+    else: #away team loses the toss
+      toss_winner = home_team
+      toss_loser = away_team
+
+    toss_statement = f"Toss: {toss_winner.name} won the toss and elected to {elect} first."
+    toss_dict = {elect: toss_winner}
+    elect_options.remove(elect)
+    toss_dict.update({elect_options[0]: toss_loser})
+
+    defending_team = toss_dict['bat'] #defending team bats first
+    chasing_team = toss_dict['bowl'] #chasing team bowls first
+    target = batting(defending_team, chasing_team, chasing=False) #target for chasing
+    result = batting(chasing_team, defending_team, chasing=True, target=target)
+
+    print('\n\n')
+    print(toss_statement)
+    print("Result:", result, '\n')
+    createScorecard(defending_team, chasing_team)
+    createScorecard(chasing_team, defending_team)
+  
+  while True: #infinite games can be played with the same teams by calling main()
+    main() #this is like a while-do loop, plays the match at least once
+    if input("Play another match with the same teams? (y/n): ").lower() == "y":
+      home_team.resetAll() #reset all stats from previous game for both teams
+      away_team.resetAll()
+    
+    else: #quit the loop
+      break
