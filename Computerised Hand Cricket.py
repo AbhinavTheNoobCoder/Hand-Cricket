@@ -183,8 +183,6 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
   for _ in bat_partners:
     _.did_bat = True
   
-  print([batter.name for batter in bat_partners], "are the openers for", batting_side.name, '\n')
-  
   available_batters = batting_side.playing_xi[2: ]
 
   bowling_order = createBowlingOrder(bowling_side.bowlers)
@@ -200,10 +198,6 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
     #playing an over
     for _ in range(6):
       batter_on_strike = bat_partners[0]
-
-      input(">>> ")
-      print(f"{bowler.name} bowling to {batter_on_strike.name}", end= ", ")
-
       if mode == "Attribute":
         runs_scored = dynamicRuns(batter_on_strike, bowler)
         wicket = (runs_scored == 'Wicket.')
@@ -219,7 +213,6 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
       batting_side.balls_played += 1
 
       if wicket: #wicket
-        print("WICKET!")
         batting_side.wickets_lost += 1
         dismissal = common_dismissal_types[floor(random.triangular(0, 2, 0))]
         bowler.wickets += 1
@@ -240,9 +233,6 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
           dismissal = f'lbw {bowler.name}'
           
         batter_on_strike.dismissal = dismissal
-        print(f"{batter_on_strike.name}\t{batter_on_strike.bat_runs}({batter_on_strike.bat_balls})")
-        print(dismissal)
-        print()
 
       else: #not a wicket
         batter_on_strike.bat_runs += runs_scored
@@ -252,8 +242,6 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
         if runs_scored % 2 == 1:
           bat_partners.reverse()
         
-        print(runs_scored, "runs.\n")
-      
       if chasing:
         if batting_side.score >= target: #chased the target
           result = f"{batting_side.name} beat {bowling_side.name} by {10 - batting_side.wickets_lost} wickets."
@@ -282,7 +270,6 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
 
         bat_partners.insert(0, new_batter)
         new_batter.did_bat = True
-        print(new_batter.name, "comes in to bat.\n")
 
     bat_partners.reverse() #the over concluded so the strike switches
     bowling_order.pop(0) #next bowler will be upfront
