@@ -16,9 +16,9 @@ Syntax: <player_name>[<bat_attribute>, <bowl_attribute>].
 
 class Player():
   def __init__(self, name):
-    self.name = name
+    self.name: str = name
     self.bat_runs = self.bat_balls = self.bowl_runs = self.bowl_balls = 0
-    self.wickets = 0
+    self.wickets:int = 0
     self.did_bat = False
     self.dismissal = "not out"
     self.batting_attribute = self.bowling_attribute = None
@@ -177,6 +177,8 @@ def dynamicRuns(batter: Player, bowler: Player):
 
 #defining batting
 def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool, target: int | None = None) -> str | int:
+  batter_dict = {batter.name: batter for batter in batting_side.playing_xi}
+  bowler_dict = {bowler.name: bowler for bowler in bowling_side.bowlers}
   bat_partners = [batting_side.playing_xi[0], batting_side.playing_xi[1]]
   for _ in bat_partners:
     _.did_bat = True
@@ -188,10 +190,16 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
   bowling_order = createBowlingOrder(bowling_side.bowlers)
 
   while batting_side.balls_played < 120:
+    bowler = input(f"Select a bowler from {list(bowler_dict.keys())}: ")
+    if bowler:
+      bowler = bowler_dict[bowler]
+    
+    else:
+      bowler = bowling_order[0]
+
     #playing an over
     for _ in range(6):
       batter_on_strike = bat_partners[0]
-      bowler = bowling_order[0]
 
       input(">>> ")
       print(f"{bowler.name} bowling to {batter_on_strike.name}", end= ", ")
@@ -265,7 +273,13 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
           return result
 
       if len(bat_partners) == 1:
-        new_batter = available_batters.pop(0)
+        new_batter = input(f"Enter the next batter from {[batter.name for batter in available_batters]}: ")
+        if new_batter:
+          new_batter = batter_dict[new_batter]
+        
+        else:
+          new_batter = available_batters.pop(0)
+
         bat_partners.insert(0, new_batter)
         new_batter.did_bat = True
         print(new_batter.name, "comes in to bat.\n")
