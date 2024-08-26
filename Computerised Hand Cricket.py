@@ -16,9 +16,9 @@ Syntax: <player_name>[<bat_attribute>, <bowl_attribute>].
 
 class Player():
   def __init__(self, name):
-    self.name: str = name
+    self.name = name
     self.bat_runs = self.bat_balls = self.bowl_runs = self.bowl_balls = 0
-    self.wickets:int = 0
+    self.wickets = 0
     self.did_bat = False
     self.dismissal = "not out"
     self.batting_attribute = self.bowling_attribute = None
@@ -177,27 +177,20 @@ def dynamicRuns(batter: Player, bowler: Player):
 
 #defining batting
 def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool, target: int | None = None) -> str | int:
-  batter_dict = {batter.name: batter for batter in batting_side.playing_xi}
-  bowler_dict = {bowler.name: bowler for bowler in bowling_side.bowlers}
   bat_partners = [batting_side.playing_xi[0], batting_side.playing_xi[1]]
   for _ in bat_partners:
     _.did_bat = True
-  
+
   available_batters = batting_side.playing_xi[2: ]
 
   bowling_order = createBowlingOrder(bowling_side.bowlers)
 
   while batting_side.balls_played < 120:
-    bowler = input(f"Select a bowler from {list(bowler_dict.keys())}: ")
-    if bowler:
-      bowler = bowler_dict[bowler]
-    
-    else:
-      bowler = bowling_order[0]
-
     #playing an over
     for _ in range(6):
       batter_on_strike = bat_partners[0]
+      bowler = bowling_order[0]
+
       if mode == "Attribute":
         runs_scored = dynamicRuns(batter_on_strike, bowler)
         wicket = (runs_scored == 'Wicket.')
@@ -241,7 +234,7 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
 
         if runs_scored % 2 == 1:
           bat_partners.reverse()
-        
+      
       if chasing:
         if batting_side.score >= target: #chased the target
           result = f"{batting_side.name} beat {bowling_side.name} by {10 - batting_side.wickets_lost} wickets."
@@ -261,13 +254,7 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
           return result
 
       if len(bat_partners) == 1:
-        new_batter = input(f"Enter the next batter from {[batter.name for batter in available_batters]}: ")
-        if new_batter:
-          new_batter = batter_dict[new_batter]
-        
-        else:
-          new_batter = available_batters.pop(0)
-
+        new_batter = available_batters.pop(0)
         bat_partners.insert(0, new_batter)
         new_batter.did_bat = True
 
@@ -355,7 +342,6 @@ if __name__ == "__main__": #run code only when it's the main program
     elect_options.remove(elect)
     toss_dict.update({elect_options[0]: toss_loser})
 
-    print('\n', toss_statement, '\n')
     defending_team = toss_dict['bat'] #defending team bats first
     chasing_team = toss_dict['bowl'] #chasing team bowls first
     target = batting(game_mode, defending_team, chasing_team, chasing=False) #target for chasing
