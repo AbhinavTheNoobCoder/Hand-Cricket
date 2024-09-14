@@ -1,5 +1,5 @@
 import random
-from math import floor, ceil
+from math import floor
 print('''Welcome to Hand Cricket.
 You have to write the playing XI for both the teams and the computer will play the game.
 When you are writing the name of an all-rounder or bowler, write "(b)" AFTER their name.
@@ -10,18 +10,23 @@ The 3 specifications can be written in any order.
 You may add batting and bowling attribute numbers to a player.
 In case you are simulating the game with attributes, add the attributes after the name
 in square brackets.
-Syntax: <player_name>[<bat_attribute>, <bowl_attribute>].
+Syntax: <player_name>[<bat_attribute>, <bowl_attribute>]
 
+Examples:
+Virat Kohli[95, 40] -> A batsman
+Rohit Sharma[93, 45](c) -> Captain and batsman
+Jasprit Bumrah[45, 95](b) -> A bowler
+Hardik Pandya[90, 84](b) -> An all-rounder who is ALLOWED TO BOWL
 ''')
 
 class Player():
-  def __init__(self, name):
+  def __init__(self, name: str) -> None:
     self.name = name
     self.bat_runs = self.bat_balls = self.bowl_runs = self.bowl_balls = 0
     self.wickets = 0
     self.did_bat = False
     self.dismissal = "not out"
-    self.batting_attribute = self.bowling_attribute = None
+    self.batting_attribute = self.bowling_attribute = 1.00
   
   def resetStats(self): #this is to reset any individual stats from the previous game
     self.bat_runs = self.bat_balls = self.bowl_runs = self.bowl_balls = self.wickets = 0
@@ -37,7 +42,7 @@ class CricketTeam():
     self.wickets_lost = self.score = self.balls_played = 0
     self.captain = self.wk = None
   
-  def initialiseTeam(self):
+  def initialiseTeam(self) -> None:
     for _ in range(11):
       player = Player(input(f"Enter a player's details for {self.name}: ").strip(" "))
 
@@ -58,41 +63,32 @@ class CricketTeam():
       
       if "[" in player.name:
         attributes: str = player.name[player.name.index("["): ]
-        attribute_list = list(eval(attributes))
+        attribute_list: list[float] = list(eval(attributes))
         player.name = player.name.replace(attributes, "").strip(" ")
         player.batting_attribute, player.bowling_attribute = attribute_list
 
       self.playing_xi.append(player)
 
-  def resetAll(self): #this is to reset any stats related to previous game
+  def resetAll(self) -> None: #this is to reset any stats related to previous game
     self.balls_played = self.score = self.wickets_lost = 0
     for player in self.playing_xi:
       player.resetStats()
 
 
 numbers = (0, 1, 2, 3, 4, 6)
-#defining scoring_counting
-def scoreCounting(bat_number: int, bowl_number: int):
-  if bat_number == 0:
-    return bowl_number
-  
-  elif bowl_number == 0:
-    return bat_number
-  
-  elif abs(bat_number - bowl_number) == 1:
-    return 0
-  
-  elif set((bat_number, bowl_number)) == {4, 6}:
-    return 0
-  
-  else:
-    return bat_number
-
-#New update - dismissal mode :)
 common_dismissal_types = ('c X b Y', 'b', 'lbw')
+
+'''Currently, the programmer of this code has only thought out this far!
+I also intend to add extras (wides, no-balls, leg byes) into the game.
+Introducing run-outs, stumpings is a part of the plan but it will take time as they
+are more complex (a non-zero number of runs can be scored off a run-out, stumpings are
+generally possible only with spinners, which we cannot specify in the code just yet!)'''
+
 
 #defining bowling order - to ensure no bowler bowls more than 2 overs, no consec. overs
 def createBowlingOrder(bowler_list: list[Player]) -> list[Player]:
+  '''Create a bowling order randomly based on the list of bowlers given.'''
+
   if len(bowler_list) == 5:
     bowling_order = []
     num_bowlers = len(bowler_list)
@@ -118,7 +114,7 @@ def createBowlingOrder(bowler_list: list[Player]) -> list[Player]:
         next_bowlers = []
 
 
-  if len(bowler_list) > 5:
+  elif len(bowler_list) > 5:
     bowling_order = []
     possible_bowlers = bowler_list.copy()
     overs_dict = {i:0 for i in bowler_list}
@@ -139,13 +135,17 @@ def createBowlingOrder(bowler_list: list[Player]) -> list[Player]:
   return bowling_order
 
 #calculate dynamic run probabilities every ball
-def dynamicRuns(batter: Player, bowler: Player):
-  x: int = batter.batting_attribute #batting attribute ∝ batting strength
-  y: int = bowler.bowling_attribute #bowling attribute ∝ bowling strength
-  s1 = x/(x+y) #relative batting strengh: 0.5 = equals, more than 0.5 = stronger
-  af = 2*(s1 - 0.5) #stronger batsman has a positive adjustment factor
+def dynamicRuns(batter: Player, bowler: Player) -> int | str:
+  '''Calculate the number of runs scored in a delivery based on the relative strength
+  of the batsman with respect to the bowler. Will return an integer if not a wicket
+  and "Wicket." if it is a wicket.'''
 
-  run_weights = (0.34*(1-af), 0.35*(1+af), 0.15*(1+2*af), 0.01*(1+2*af), 0.10*(1+3*af), 0.05  *(1+4*af))
+  x: float = batter.batting_attribute #batting attribute ∝ batting strength
+  y: float = bowler.bowling_attribute #bowling attribute ∝ bowling strength
+  s1: float = x/(x+y) #relative batting strengh: 0.5 = equals, more than 0.5 = stronger
+  af: float = 2*(s1 - 0.5) #stronger batsman has a positive adjustment factor
+
+  run_weights = (0.34*(1-af), 0.35*(1+af), 0.15*(1+2*af), 0.01*(1+2*af), 0.10*(1+3*af), 0.05*(1+4*af))
   #these are probabilities of (0,1,2,3,4,6) runs occurring per ball
   #run_weights will be changed into probability percentage after processing
 
@@ -158,8 +158,8 @@ def dynamicRuns(batter: Player, bowler: Player):
   if runs_scored != 0:
     return runs_scored
   
-  else:
-    s2 = y/(x+y) #relative bowling strength
+  else: #0 runs scored - may or may not be a wicket
+    s2 = 1 - s1 #relative bowling strength = 1 - relative batting strength
     af = (s2 - 0.5)/2
     wicket_weights = (0.12*(1 + af), 0.88*(1 - af))
     percent_wicket_weights = []
@@ -176,7 +176,10 @@ def dynamicRuns(batter: Player, bowler: Player):
 
 
 #defining batting
-def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool, target: int | None = None) -> str | int:
+def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool, target: int | None = None) -> str | int:
+  '''Plays one batting innings taking the parameters specified. Returns integer (target)
+  if chasing=False and str (match result) if chasing=True.'''
+
   bat_partners = [batting_side.playing_xi[0], batting_side.playing_xi[1]]
   for _ in bat_partners:
     _.did_bat = True
@@ -191,16 +194,9 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
       batter_on_strike = bat_partners[0]
       bowler = bowling_order[0]
 
-      if mode == "Attribute":
-        runs_scored = dynamicRuns(batter_on_strike, bowler)
-        wicket = (runs_scored == 'Wicket.')
+      runs_scored = dynamicRuns(batter_on_strike, bowler)
+      wicket = (runs_scored == 'Wicket.')
       
-      else:
-        bat_number = numbers[floor(random.triangular(0, 1, 5))]
-        bowl_number = numbers[ceil(random.triangular(0, 4, 5))]
-        runs_scored = scoreCounting(bat_number, bowl_number)
-        wicket = (bat_number == bowl_number)
-
       batter_on_strike.bat_balls += 1 #incrementing the ball already
       bowler.bowl_balls += 1
       batting_side.balls_played += 1
@@ -275,7 +271,11 @@ def batting(mode: str, batting_side: CricketTeam, bowling_side: CricketTeam, cha
       return result
 
 
-def createScorecard(batting_side: CricketTeam, bowling_side: CricketTeam):
+def createScorecard(batting_side: CricketTeam, bowling_side: CricketTeam) -> None:
+  '''Print the scorecard for one innings based on which team is batting and bowling.
+  To print the scorecard for the whole match, run the function twice with the batting
+  team being the defending team the first time and the chasing team the second time.'''
+
   scorecard = f"{batting_side.name} - {batting_side.score}/{batting_side.wickets_lost} ({batting_side.balls_played//6}.{batting_side.balls_played%6} overs):"
   for batter in batting_side.playing_xi:
     if batter.did_bat:
@@ -307,13 +307,6 @@ def createScorecard(batting_side: CricketTeam, bowling_side: CricketTeam):
 
 
 if __name__ == "__main__": #run code only when it's the main program
-  game_mode = input("Enter 'A' to play with attributes, else enter anything: ").strip(" ").lower()
-  if game_mode == 'a':
-    game_mode = 'Attribute'
-  
-  else:
-    game_mode = 'Non-attribute'
-
   #accepting two teams
   home_team = CricketTeam(input("Enter the home team: ").strip(" "))
   home_team.initialiseTeam()
@@ -321,7 +314,9 @@ if __name__ == "__main__": #run code only when it's the main program
   away_team = CricketTeam(input("Enter the away team: ").strip(" "))
   away_team.initialiseTeam()
 
-  def main(): #main part of the program - toss and gameplay - can be reused infinitely
+  def main() -> None:
+    '''Main part of the program - toss and gameplay - can be reused infinitely.'''
+    
     #toss
     toss_options = ('H', 'T')
     toss_call = random.choice(toss_options)
@@ -344,8 +339,8 @@ if __name__ == "__main__": #run code only when it's the main program
 
     defending_team = toss_dict['bat'] #defending team bats first
     chasing_team = toss_dict['bowl'] #chasing team bowls first
-    target = batting(game_mode, defending_team, chasing_team, chasing=False) #target for chasing
-    result = batting(game_mode, chasing_team, defending_team, chasing=True, target=target)
+    target = batting(defending_team, chasing_team, chasing=False) #target for chasing
+    result = batting(chasing_team, defending_team, chasing=True, target=target)
 
     print('\n\n')
     print(toss_statement)
