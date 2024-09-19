@@ -15,6 +15,7 @@ Syntax: <player_name>[<bat_attribute>, <bowl_attribute>]
 Examples:
 Virat Kohli[95, 40] -> A batsman
 Rohit Sharma[93, 45](c) -> Captain and batsman
+Rishabh Pant[91, 5](wk) -> Wicketkeeper
 Jasprit Bumrah[45, 95](b) -> A bowler
 Hardik Pandya[90, 84](b) -> An all-rounder who is ALLOWED TO BOWL
 ''')
