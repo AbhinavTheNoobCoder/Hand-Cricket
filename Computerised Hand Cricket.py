@@ -29,14 +29,17 @@ class Player():
     self.dismissal = "not out"
     self.batting_attribute = self.bowling_attribute = 1.00
   
-  def resetStats(self): #this is to reset any individual stats from the previous game
+  def resetStats(self) -> None: #this is to reset any individual stats from the previous game
     self.bat_runs = self.bat_balls = self.bowl_runs = self.bowl_balls = self.wickets = 0
     self.did_bat = False
     self.dismissal = "not out"
+  
+  def __repr__(self) -> str:
+    return self.name
 
 #creating CricketTeam to store all info related to the team
 class CricketTeam():
-  def __init__(self, name):
+  def __init__(self, name: str) -> None:
     self.name: str = name
     self.playing_xi: list[Player] = []
     self.bowlers: list[Player] = []
@@ -74,6 +77,9 @@ class CricketTeam():
     self.balls_played = self.score = self.wickets_lost = 0
     for player in self.playing_xi:
       player.resetStats()
+
+  def __repr__(self) -> str:
+    return self.name
 
 
 numbers = (0, 1, 2, 3, 4, 6)
@@ -211,16 +217,16 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
         if dismissal == 'c X b Y':
           catcher = random.choice(bowling_side.playing_xi)
           if catcher == bowler:
-            dismissal = f'c & b {bowler.name}'
+            dismissal = f'c & b {bowler}'
 
           else:
-            dismissal = f'c {catcher.name}  b {bowler.name}'
+            dismissal = f'c {catcher}  b {bowler}'
 
         elif dismissal == 'b':
-          dismissal = f'b {bowler.name}'
+          dismissal = f'b {bowler}'
 
         elif dismissal == 'lbw':
-          dismissal = f'lbw {bowler.name}'
+          dismissal = f'lbw {bowler}'
           
         batter_on_strike.dismissal = dismissal
 
@@ -234,7 +240,7 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
       
       if chasing:
         if batting_side.score >= target: #chased the target
-          result = f"{batting_side.name} beat {bowling_side.name} by {10 - batting_side.wickets_lost} wickets."
+          result = f"{batting_side} beat {bowling_side} by {10 - batting_side.wickets_lost} wickets."
           return result
 
       if batting_side.wickets_lost == 10: #all out
@@ -243,7 +249,7 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
         
         elif chasing: #couldn't chase the target and got all out
           if batting_side.score < target - 1: #lesser runs than opponent
-            result = f"{bowling_side.name} beat {batting_side.name} by {target - 1 - batting_side.score} runs."
+            result = f"{bowling_side} beat {batting_side} by {target - 1 - batting_side.score} runs."
           
           elif batting_side.score == target - 1: #same runs as the opponent
             result = "Match drawn."
@@ -264,7 +270,7 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
     
     elif chasing: #couldn't chase and didn't get all out
       if batting_side.score < target - 1:
-        result = f"{bowling_side.name} beat {batting_side.name} by {target - 1 - batting_side.score} runs."
+        result = f"{bowling_side} beat {batting_side} by {target - 1 - batting_side.score} runs."
 
       elif batting_side.score == target - 1:
         result = "Match drawn."
@@ -277,7 +283,7 @@ def createScorecard(batting_side: CricketTeam, bowling_side: CricketTeam) -> Non
   To print the scorecard for the whole match, run the function twice with the batting
   team being the defending team the first time and the chasing team the second time.'''
 
-  scorecard = f"{batting_side.name} - {batting_side.score}/{batting_side.wickets_lost} ({batting_side.balls_played//6}.{batting_side.balls_played%6} overs):"
+  scorecard = f"{batting_side} - {batting_side.score}/{batting_side.wickets_lost} ({batting_side.balls_played//6}.{batting_side.balls_played%6} overs):"
   for batter in batting_side.playing_xi:
     if batter.did_bat:
       name = batter.name
@@ -293,7 +299,7 @@ def createScorecard(batting_side: CricketTeam, bowling_side: CricketTeam) -> Non
 
       scorecard += f'\n{name:<25}{batter.dismissal:<50}{batter_score:>5}'
 
-  scorecard += f'\n\n{bowling_side.name} bowling:'
+  scorecard += f'\n\n{bowling_side} bowling:'
   for bowler in bowling_side.bowlers:
     name = bowler.name
     overs = f'{bowler.bowl_balls // 6}.{bowler.bowl_balls % 6} overs'
@@ -333,7 +339,7 @@ if __name__ == "__main__": #run code only when it's the main program
       toss_winner = home_team
       toss_loser = away_team
 
-    toss_statement = f"Toss: {toss_winner.name} won the toss and elected to {elect} first."
+    toss_statement = f"Toss: {toss_winner} won the toss and elected to {elect} first."
     toss_dict = {elect: toss_winner}
     elect_options.remove(elect)
     toss_dict.update({elect_options[0]: toss_loser})
