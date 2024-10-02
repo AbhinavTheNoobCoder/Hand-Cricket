@@ -22,11 +22,11 @@ Hardik Pandya[90, 84](b) -> An all-rounder who is ALLOWED TO BOWL
 
 class Player():
   def __init__(self, name: str) -> None:
-    self.name = name
+    self.name: str = name
     self.bat_runs = self.bat_balls = self.bowl_runs = self.bowl_balls = 0
-    self.wickets = 0
-    self.did_bat = False
-    self.dismissal = "not out"
+    self.wickets: int = 0
+    self.did_bat: bool = False
+    self.dismissal: str = "not out"
     self.batting_attribute = self.bowling_attribute = 1.00
   
   def resetStats(self) -> None: #this is to reset any individual stats from the previous game
@@ -82,8 +82,8 @@ class CricketTeam():
     return self.name
 
 
-numbers = (0, 1, 2, 3, 4, 6)
-common_dismissal_types = ('c X b Y', 'b', 'lbw')
+numbers: tuple[int] = (0, 1, 2, 3, 4, 6)
+common_dismissal_types: tuple[str] = ('c X b Y', 'b', 'lbw')
 
 '''Currently, the programmer of this code has only thought out this far!
 I also intend to add extras (wides, no-balls, leg byes) into the game.
@@ -156,7 +156,7 @@ def dynamicRuns(batter: Player, bowler: Player) -> int | str:
   #these are probabilities of (0,1,2,3,4,6) runs occurring per ball
   #run_weights will be changed into probability percentage after processing
 
-  percent_run_weights = []
+  percent_run_weights: list[float] = []
   for i in run_weights:
     percent = (i/sum(run_weights))*100
     percent_run_weights.append(percent)
@@ -201,8 +201,8 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
       batter_on_strike = bat_partners[0]
       bowler = bowling_order[0]
 
-      runs_scored = dynamicRuns(batter_on_strike, bowler)
-      wicket = (runs_scored == 'Wicket.')
+      runs_scored: (int | str) = dynamicRuns(batter_on_strike, bowler)
+      wicket: bool = (runs_scored == 'Wicket.')
       
       batter_on_strike.bat_balls += 1 #incrementing the ball already
       bowler.bowl_balls += 1
@@ -210,7 +210,7 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
 
       if wicket: #wicket
         batting_side.wickets_lost += 1
-        dismissal = common_dismissal_types[floor(random.triangular(0, 2, 0))]
+        dismissal: str = common_dismissal_types[floor(random.triangular(0, 2, 0))]
         bowler.wickets += 1
         bat_partners.remove(batter_on_strike)
 
@@ -240,7 +240,7 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
       
       if chasing:
         if batting_side.score >= target: #chased the target
-          result = f"{batting_side} beat {bowling_side} by {10 - batting_side.wickets_lost} wickets."
+          result: str = f"{batting_side} beat {bowling_side} by {10 - batting_side.wickets_lost} wickets."
           return result
 
       if batting_side.wickets_lost == 10: #all out
@@ -249,10 +249,10 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
         
         elif chasing: #couldn't chase the target and got all out
           if batting_side.score < target - 1: #lesser runs than opponent
-            result = f"{bowling_side} beat {batting_side} by {target - 1 - batting_side.score} runs."
+            result: str = f"{bowling_side} beat {batting_side} by {target - 1 - batting_side.score} runs."
           
           elif batting_side.score == target - 1: #same runs as the opponent
-            result = "Match drawn."
+            result: str = "Match drawn."
 
           return result
 
@@ -270,10 +270,10 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
     
     elif chasing: #couldn't chase and didn't get all out
       if batting_side.score < target - 1:
-        result = f"{bowling_side} beat {batting_side} by {target - 1 - batting_side.score} runs."
+        result: str = f"{bowling_side} beat {batting_side} by {target - 1 - batting_side.score} runs."
 
       elif batting_side.score == target - 1:
-        result = "Match drawn."
+        result: str = "Match drawn."
 
       return result
 
@@ -283,7 +283,7 @@ def createScorecard(batting_side: CricketTeam, bowling_side: CricketTeam) -> Non
   To print the scorecard for the whole match, run the function twice with the batting
   team being the defending team the first time and the chasing team the second time.'''
 
-  scorecard = f"{batting_side} - {batting_side.score}/{batting_side.wickets_lost} ({batting_side.balls_played//6}.{batting_side.balls_played%6} overs):"
+  scorecard: str = f"{batting_side} - {batting_side.score}/{batting_side.wickets_lost} ({batting_side.balls_played//6}.{batting_side.balls_played%6} overs):"
   for batter in batting_side.playing_xi:
     if batter.did_bat:
       name = batter.name
