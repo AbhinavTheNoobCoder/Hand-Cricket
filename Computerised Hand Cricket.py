@@ -108,7 +108,7 @@ class CricketTeam():
 
 
 numbers = (0, 1, 2, 3, 4, 6)
-common_dismissal_types: tuple[str] = ('c X b Y', 'b', 'lbw', 'st', 'run out')
+common_dismissal_types = ('c X b Y', 'b', 'lbw', 'st', 'run out')
 # I intend to add extras (wides, no-balls, leg byes) into the game.
 
 #defining bowling order - to ensure no bowler bowls more than 2 overs, no consec. overs
@@ -291,12 +291,16 @@ def batting(batting_side: CricketTeam, bowling_side: CricketTeam, chasing: bool,
         
         except ZeroDivisionError:
           pass
-
-      usable_bowlers.sort(key= lambda x: x.bowling_performance, reverse= True)
-      if usable_bowlers[0].bowling_performance > 0.4 + bowler.bowling_performance:
-        bowler.overs_assigned -= 1
-        bowler = usable_bowlers[0]
-        bowler.overs_assigned += 1
+      
+      try:
+        usable_bowlers.sort(key= lambda x: x.bowling_performance, reverse= True)
+        if usable_bowlers[0].bowling_performance > 0.4 + bowler.bowling_performance:
+          bowler.overs_assigned -= 1
+          bowler = usable_bowlers[0]
+          bowler.overs_assigned += 1
+      
+      except IndexError:
+        pass
 
     if batting_side.balls_played in range(0, 36):
       #30 is the upper limit for checking for powerplay here because once balls = 30
